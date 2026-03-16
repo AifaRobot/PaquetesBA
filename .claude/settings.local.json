@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(docker compose:*)",
+      "Bash(npx prisma:*)",
+      "Bash(npm run:*)",
+      "Bash(node:*)",
+      "Bash(curl:*)",
+      "Bash(__NEW_LINE_584400162077d19e__ curl:*)",
+      "Bash(echo \"=== backend/src/ modules ===\" && ls D:/Proyectos/PaquetesBA/backend/src/\necho \"=== frontend/src/ ===\" && ls D:/Proyectos/PaquetesBA/frontend/src/\necho \"=== backend package.json name ===\" && grep '\"name\"' D:/Proyectos/PaquetesBA/backend/package.json\necho \"=== frontend package.json name ===\" && grep '\"name\"' D:/Proyectos/PaquetesBA/frontend/package.json\necho \"=== .env.docker DATABASE_URL ===\" && grep DATABASE_URL D:/Proyectos/PaquetesBA/backend/.env.docker\necho \"=== docker-compose postgres db ===\" && grep POSTGRES_DB D:/Proyectos/PaquetesBA/docker-compose.yml)",
+      "Bash(cd \"D:/Proyectos/PaquetesBA/frontend-nuevo\" && npx expo install --fix 2>&1)",
+      "Bash(mkdir -p D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation && cp D:/Proyectos/PaquetesBA/frontend/src/navigation/AdminNavigator.tsx D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation/ && cp D:/Proyectos/PaquetesBA/frontend/src/navigation/AuthNavigator.tsx D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation/ && cp D:/Proyectos/PaquetesBA/frontend/src/navigation/ClientNavigator.tsx D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation/ && cp D:/Proyectos/PaquetesBA/frontend/src/navigation/DriverNavigator.tsx D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation/ && cp D:/Proyectos/PaquetesBA/frontend/src/navigation/RootNavigator.tsx D:/Proyectos/PaquetesBA/frontend-nuevo/src/navigation/ && echo \"OK\")",
+      "Bash(cd D:/Proyectos/PaquetesBA/frontend-nuevo && npx expo install react-native-gesture-handler react-native-reanimated react-native-screens react-native-safe-area-context @react-navigation/native @react-navigation/stack @react-navigation/bottom-tabs @react-navigation/drawer)",
+      "Bash(cd D:/Proyectos/PaquetesBA/frontend-nuevo && npx expo install @expo/vector-icons @react-navigation/native-stack @tanstack/react-query expo-camera expo-image-picker expo-location expo-notifications expo-secure-store expo-task-manager react-hook-form react-native-maps react-native-signature-canvas zod 2>&1 | tail -8)",
+      "Bash(node -e \"console.log\\(require\\('D:/Proyectos/PaquetesBA/frontend-nuevo/node_modules/expo-secure-store/package.json'\\).version\\)\")",
+      "Bash(cd D:/Proyectos/PaquetesBA/frontend-nuevo && npx expo install --fix 2>&1)",
+      "Bash(ls -la /d/Proyectos/PaquetesBA/frontend-nuevo2/app/\\\\\\(client\\\\\\)/)",
+      "Bash(cat \"D:/Proyectos/PaquetesBA/frontend-nuevo2/node_modules/@tanstack/react-query/package.json\" | python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('version:', d.get\\('version'\\)\\); print\\('exports keys:', list\\(d.get\\('exports',{}\\).keys\\(\\)\\)[:10]\\)\")",
+      "Bash(cd D:/Proyectos/PaquetesBA/frontend-nuevo2 && npx expo install @react-native-async-storage/async-storage)",
+      "Bash(cat \"D:/Proyectos/PaquetesBA/frontend-nuevo2/app/\\(client\\)/track.tsx\")",
+      "Bash(ls -1 /d/Proyectos/PaquetesBA/frontend-nuevo2/app/*/)",
+      "Bash(ls D:/Proyectos/PaquetesBA/frontend-nuevo2/app/\\\\\\(admin\\\\\\)/)",
+      "Bash(find:*)",
+      "Bash(docker exec:*)",
+      "WebFetch(domain:apis.datos.gob.ar)",
+      "Bash(cd:*)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(ipconfig:*)"
+    ]
+  }
+}

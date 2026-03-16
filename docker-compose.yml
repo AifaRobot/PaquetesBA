@@ -1,0 +1,118 @@
+services:
+
+  postgres:
+    profiles:
+      - dev
+      - prod
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: paquetesba
+      TZ: America/Argentina/Buenos_Aires
+      PGTZ: America/Argentina/Buenos_Aires
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin", "-d", "paquetesba"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - net
+
+  dev-backend:
+    profiles:
+      - dev
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: dev-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:dev"
+    networks:
+      - net
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/paquetesba
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  dev-frontend:
+    profiles:
+      - dev
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: dev-frontend
+    ports:
+      - "8081:8081"   # Metro bundler
+      - "19000:19000" # Expo Go (LAN)
+      - "19001:19001" # Expo DevTools
+      - "19002:19002" # WebSocket Metro
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    environment:
+      # Reemplazar con la IP de tu máquina en la red local (ifconfig / ipconfig)
+      - REACT_NATIVE_PACKAGER_HOSTNAME=${HOST_IP:-localhost}
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    networks:
+      - net
+
+  prod-backend:
+    profiles:
+      - prod
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    container_name: prod-backend
+    ports:
+      - "8000:8000"
+    networks:
+      - net
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://admin:admin123@postgres:5432/paquetesba
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run start:prod"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  prod-frontend:
+    profiles:
+      - prod
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: prod-frontend
+    ports:
+      - "8081:8081"
+      - "19000:19000"
+      - "19001:19001"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    env_file:
+      - ./frontend/.env
+    environment:
+      - REACT_NATIVE_PACKAGER_HOSTNAME=${HOST_IP:-localhost}
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+    networks:
+      - net
+
+networks:
+  net:

@@ -1,0 +1,269 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  CLIENT
+  DRIVER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VERIFICATION
+}
+
+enum PackageSize {
+  SMALL
+  MEDIUM
+  LARGE
+  EXTRA_LARGE
+}
+
+enum PackageType {
+  STANDARD
+  FRAGILE
+  REFRIGERATED
+  DOCUMENT
+}
+
+enum ShipmentStatus {
+  PENDING
+  CONFIRMED
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  FAILED
+  CANCELLED
+}
+
+enum OrderStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+enum NotifType {
+  ORDER_CREATED
+  ORDER_ASSIGNED
+  PICKED_UP
+  IN_TRANSIT
+  DELIVERED
+  DRIVER_NEARBY
+  FAILED
+}
+
+enum ZoneStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id              String        @id @default(uuid())
+  email           String        @unique
+  phone           String        @unique
+  password        String
+  firstName       String        @map("first_name")
+  lastName        String        @map("last_name")
+  avatarUrl       String?       @map("avatar_url")
+  role            UserRole      @default(CLIENT)
+  status          UserStatus    @default(ACTIVE)
+  fcmToken        String?       @map("fcm_token")
+  isEmailVerified Boolean       @default(false) @map("is_email_verified")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  clientOrders    Order[]         @relation("ClientOrders")
+  driverOrders    Order[]         @relation("DriverOrders")
+  clientAddresses Address[]
+  driverProfile   DriverProfile?
+  notifications   Notification[]
+
+  @@map("users")
+}
+
+model DriverProfile {
+  id                  String    @id @default(uuid())
+  userId              String    @unique @map("user_id")
+  vehicleType         String    @map("vehicle_type")
+  licensePlate        String    @map("license_plate")
+  licenseNumber       String    @map("license_number")
+  zoneId              String?   @map("zone_id")
+  isOnline            Boolean   @default(false) @map("is_online")
+  currentLat          Float?    @map("current_lat")
+  currentLng          Float?    @map("current_lng")
+  lastLocationAt      DateTime? @map("last_location_at")
+  rating              Float     @default(5.0)
+  completedDeliveries Int       @default(0) @map("completed_deliveries")
+
+  user User  @relation(fields: [userId], references: [id])
+  zone Zone? @relation(fields: [zoneId], references: [id])
+
+  @@map("driver_profiles")
+}
+
+model Address {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  label        String
+  street       String
+  streetNumber String   @map("street_number")
+  apartment    String?
+  city         String
+  province     String
+  postalCode   String   @map("postal_code")
+  lat          Float
+  lng          Float
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("addresses")
+}
+
+model Zone {
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  status      ZoneStatus @default(ACTIVE)
+  polygon     String?
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  drivers DriverProfile[]
+  orders  Order[]
+  rates   Rate[]
+
+  @@map("zones")
+}
+
+model Rate {
+  id          String      @id @default(uuid())
+  zoneId      String      @map("zone_id")
+  packageSize PackageSize @map("package_size")
+  packageType PackageType @map("package_type")
+  basePrice   Float       @map("base_price")
+  pricePerKm  Float       @map("price_per_km")
+  isActive    Boolean     @default(true) @map("is_active")
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  zone Zone @relation(fields: [zoneId], references: [id])
+
+  @@unique([zoneId, packageSize, packageType])
+  @@map("rates")
+}
+
+model Order {
+  id                 String         @id @default(uuid())
+  trackingCode       String         @unique @map("tracking_code")
+  clientId           String         @map("client_id")
+  driverId           String?        @map("driver_id")
+  zoneId             String?        @map("zone_id")
+  packageSize        PackageSize    @map("package_size")
+  packageType        PackageType    @map("package_type")
+  packageDescription String?        @map("package_description")
+  weightKg           Float?         @map("weight_kg")
+  originStreet       String         @map("origin_street")
+  originStreetNumber String         @map("origin_street_number")
+  originApartment    String?        @map("origin_apartment")
+  originCity         String         @map("origin_city")
+  originLat          Float          @map("origin_lat")
+  originLng          Float          @map("origin_lng")
+  originContact      String?        @map("origin_contact")
+  originPhone        String?        @map("origin_phone")
+  destStreet         String         @map("dest_street")
+  destStreetNumber   String         @map("dest_street_number")
+  destApartment      String?        @map("dest_apartment")
+  destCity           String         @map("dest_city")
+  destLat            Float          @map("dest_lat")
+  destLng            Float          @map("dest_lng")
+  destContact        String?        @map("dest_contact")
+  destPhone          String?        @map("dest_phone")
+  scheduledAt        DateTime?      @map("scheduled_at")
+  status             ShipmentStatus @default(PENDING)
+  orderStatus        OrderStatus    @default(OPEN)
+  estimatedPrice     Float?         @map("estimated_price")
+  finalPrice         Float?         @map("final_price")
+  distanceKm         Float?         @map("distance_km")
+  signatureUrl       String?        @map("signature_url")
+  proofPhotoUrl      String?        @map("proof_photo_url")
+  deliveryNotes      String?        @map("delivery_notes")
+  failureReason      String?        @map("failure_reason")
+  clientRating       Int?           @map("client_rating")
+  clientReview       String?        @map("client_review")
+  pickedUpAt         DateTime?      @map("picked_up_at")
+  deliveredAt        DateTime?      @map("delivered_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+
+  client        User                 @relation("ClientOrders", fields: [clientId], references: [id])
+  driver        User?                @relation("DriverOrders", fields: [driverId], references: [id])
+  zone          Zone?                @relation(fields: [zoneId], references: [id])
+  statusHistory OrderStatusHistory[]
+  payment       Payment?
+
+  @@map("orders")
+}
+
+model OrderStatusHistory {
+  id          String         @id @default(uuid())
+  orderId     String         @map("order_id")
+  status      ShipmentStatus
+  changedById String         @map("changed_by_id")
+  lat         Float?
+  lng         Float?
+  notes       String?
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("order_status_history")
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  orderId     String        @unique @map("order_id")
+  amount      Float
+  method      String
+  status      PaymentStatus @default(PENDING)
+  externalRef String?       @map("external_ref")
+  paidAt      DateTime?     @map("paid_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  orderId   String?   @map("order_id")
+  type      NotifType
+  title     String
+  body      String
+  isRead    Boolean   @default(false) @map("is_read")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
+}
